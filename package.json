@@ -1,0 +1,25 @@
+{
+  "name": "evolution",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MisterGuy2013/Evolution.git"
+  },
+  "author": "MisterGuy2013",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MisterGuy2013/Evolution/issues"
+  },
+  "homepage": "https://github.com/MisterGuy2013/Evolution#readme",
+  "dependencies": {
+    "express": "^4.17.3",
+    "http": "^0.0.1-security",
+    "path": "^0.12.7"
+  }
+}
