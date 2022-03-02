@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XOR AI</title>
+    <title>Snake AI</title>
     <link rel="stylesheet" type="text/css" href="https://rawgit.com/wagenaartje/neataptic/master/graph/graph.css">
 <script src="https://d3js.org/d3.v3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/tgdwyer/WebCola/WebCola/cola.min.js"></script>
@@ -13,9 +13,12 @@
     <script src="https://wagenaartje.github.io/neataptic/cdn/1.4.7/neataptic.js"></script>
 </head>
 <body>
-    <h1>XOR example made using Neataptic.js</h1>
-
+    <h1>A snake AI that YOU train</h1>
+    <button onclick="start()">start training</button>
+    <button onclick="stop()">stop training</button>
+    <button onclick="ai()">start ai</button>
     <div id="canvas"></div>
+    <canvas width="400" height="400" id="game" style="border:1px solid black; background-color: gray;"></canvas>
     <svg id="draw" width="600px" height="450px" />
 
 
@@ -26,15 +29,16 @@
         height: 100%;
       }</style>
     <script>
+      var network = new neataptic.Network(4,4);
 async function abc(trainingSet) {
-var network = new neataptic.Network(2,1);
 
-/*var trainingSet = [
-  { input: [0,0], output: [0] },
-  { input: [0,1], output: [1] },
-  { input: [1,0], output: [1] },
-  { input: [1,1], output: [0] }
-];*/
+
+var trainingSetTWO = [
+  { input: [0,0,0,0], output: [0,0,0,0] },
+  { input: [0,1,0,0], output: [0,1,0,0] },
+  { input: [1,0,0,1], output: [1,0,0,1] },
+  { input: [1,1,1,1], output: [1,1,1,1] }
+];
 
 
     await network.evolve(trainingSet, {
@@ -47,17 +51,13 @@ var network = new neataptic.Network(2,1);
         iterations: 1000,
         mutationRate: 0.5
       });
+  aiGo=true;
+  //console.log(network.activate([snake.x/400,snake.y/400,apple.x/400,apple.y/400]));
+  requestAnimationFrame(loop);
   
-  document.getElementById("canvas").innerHTML = "0,0 = " +
-    network.activate([0,0]) + "<br />0,1 = " +
-    network.activate([0,1]) + "<br />1,0 = " +
-    network.activate([1,0]) + "<br />1,1 = " +
-    network.activate([1,1]);
-  
-  drawGraph(network.graph(500, 400), '#draw');
 }
 
-abc();
+//abc();
 
 
 

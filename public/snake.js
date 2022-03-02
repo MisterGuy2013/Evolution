@@ -1,323 +1,166 @@
-var Snake = (function () {
+var canvas = document.getElementById("game");
+var context = canvas.getContext("2d");
+var grid = 10;
+var count = 0;
+var running = false;
+var aiGo = false;
+var data = [];
 
-  const INITIAL_TAIL = 4;
-  var fixedTail = true;
-
-  var intervalID;
-  
-  var tileCount = 10;
-  var gridSize = 400/tileCount;
-
-  const INITIAL_PLAYER = { x: Math.floor(tileCount / 2), y: Math.floor(tileCount / 2) };
-  
-  var velocity = { x:0, y:0 };
-  var player = { x: INITIAL_PLAYER.x, y: INITIAL_PLAYER.y };
-
-  var walls = false;
-
-  var fruit = { x:1, y:1 };
-
-  var trail = [];
-  var tail = INITIAL_TAIL;
-
-  var reward = 0;
-  var points = 0;
-  var pointsMax = 0;
-
-  var ActionEnum = { 'none':0, 'up':1, 'down':2, 'left':3, 'right':4 };
-  Object.freeze(ActionEnum);
-  var lastAction = ActionEnum.none;
-  
-  function setup () {
-    canv = document.getElementById('gc');
-    ctx = canv.getContext('2d');
-    // document.addEventListener('keydown', keyPush);
-    // document.body.style.backgroundColor='rgba(225,225,225,0.2)';
-    
-    game.reset();
-  }
-
-  var game = {
-
-    reset: function () {
-      ctx.fillStyle = 'grey';
-      ctx.fillRect(0, 0, canv.width, canv.height);
-
-      tail = INITIAL_TAIL;
-      points = 0;
-      velocity.x = 0;
-      velocity.y = 0;
-      player.x = INITIAL_PLAYER.x;
-      player.y = INITIAL_PLAYER.y;
-      // this.RandomFruit();
-      reward = -1;
-
-      lastAction = ActionEnum.none;
-
-      trail = [];
-      trail.push({ x: player.x, y: player.y });
-      // for(var i=0; i<tail; i++) trail.push({ x: player.x, y: player.y });
-    },
-
-    action: {
-      up: function () {
-        if (lastAction != ActionEnum.down){
-          velocity.x = 0;
-          velocity.y = -1;
-        }
-      },
-      down: function () {
-        if (lastAction != ActionEnum.up){
-          velocity.x = 0;
-          velocity.y = 1;
-        }
-      },
-      left: function () {
-        if (lastAction != ActionEnum.right){
-          velocity.x = -1;
-          velocity.y = 0;
-        }
-      },
-      right: function () {
-        if (lastAction != ActionEnum.left){
-          velocity.x = 1;
-          velocity.y = 0;
-        }
-      }
-    },
-
-    RandomFruit: function () {
-      if(walls){
-        fruit.x = 1+Math.floor(Math.random() * (tileCount-2));
-        fruit.y = 1+Math.floor(Math.random() * (tileCount-2));
-      }
-      else {
-        fruit.x = Math.floor(Math.random() * tileCount);
-        fruit.y = Math.floor(Math.random() * tileCount);
-      }
-    },
-
-    log: function () {
-      console.log('====================');
-      console.log('x:' + player.x + ', y:' + player.y);
-      console.log('tail:' + tail + ', trail.length:' + trail.length);
-    },
-
-    loop: function () {
-
-      reward = -0.1;
-
-      function DontHitWall () {
-        if(player.x < 0) player.x = tileCount-1;
-        if(player.x >= tileCount) player.x = 0;
-        if(player.y < 0) player.y = tileCount-1;
-        if(player.y >= tileCount) player.y = 0;
-      }
-      function HitWall () {
-        if(player.x < 1) game.reset();
-        if(player.x > tileCount-2) game.reset();
-        if(player.y < 1) game.reset();
-        if(player.y > tileCount-2) game.reset();
-
-        ctx.fillStyle = 'grey';
-        ctx.fillRect(0,0,gridSize-1,canv.height);
-        ctx.fillRect(0,0,canv.width,gridSize-1);
-        ctx.fillRect(canv.width-gridSize+1,0,gridSize,canv.height);
-        ctx.fillRect(0, canv.height-gridSize+1,canv.width,gridSize);
-      }
-
-      var stopped = velocity.x == 0 && velocity.y == 0;
-      
-      player.x += velocity.x;
-      player.y += velocity.y;
-      
-      if (velocity.x == 0 && velocity.y == -1) lastAction = ActionEnum.up;
-      if (velocity.x == 0 && velocity.y == 1) lastAction = ActionEnum.down;
-      if (velocity.x == -1 && velocity.y == 0) lastAction = ActionEnum.left;
-      if (velocity.x == 1 && velocity.y == 0) lastAction = ActionEnum.right;
-      
-      ctx.fillStyle = 'rgba(40,40,40,0.8)';
-      ctx.fillRect(0,0,canv.width,canv.height);
-      
-      if(walls) HitWall();
-      else DontHitWall();
-      
-      // game.log();
-      
-      if (!stopped){
-        trail.push({x:player.x, y:player.y});
-        while(trail.length > tail) trail.shift();
-      }
-
-      if(!stopped) {
-        ctx.fillStyle = 'rgba(200,200,200,0.2)';
-        ctx.font = "small-caps 14px Helvetica";
-        ctx.fillText("(esc) reset", 24, 356);
-        ctx.fillText("(space) pause", 24, 374);
-      }
-      
-      ctx.fillStyle = 'green';
-      for(var i=0; i<trail.length-1; i++) {
-        ctx.fillRect(trail[i].x * gridSize+1, trail[i].y * gridSize+1, gridSize-2, gridSize-2);
-        
-        // console.debug(i + ' => player:' + player.x, player.y + ', trail:' + trail[i].x, trail[i].y);
-        if (!stopped && trail[i].x == player.x && trail[i].y == player.y){
-          game.reset();
-        }
-        ctx.fillStyle = 'lime';
-      }
-      ctx.fillRect(trail[trail.length-1].x * gridSize+1, trail[trail.length-1].y * gridSize+1, gridSize-2, gridSize-2);
-      
-      if (player.x == fruit.x && player.y == fruit.y) {
-        if(!fixedTail) tail++;
-        points++;
-        if(points > pointsMax) pointsMax = points;
-        reward = 1;
-        game.RandomFruit();
-        // make sure new fruit didn't spawn in snake tail 
-        while((function () {
-          for(var i=0; i<trail.length; i++) {
-            if (trail[i].x == fruit.x && trail[i].y == fruit.y) {
-              game.RandomFruit();
-              return true;
-            }
-          }
-          return false;
-        })());
-      }
-      
-      ctx.fillStyle = 'red';
-      ctx.fillRect(fruit.x * gridSize+1, fruit.y * gridSize+1, gridSize-2, gridSize-2);
-      
-      if(stopped) {
-        ctx.fillStyle = 'rgba(250,250,250,0.8)';
-        ctx.font = "small-caps bold 14px Helvetica";
-        ctx.fillText("press ARROW KEYS to START...", 24, 374);
-      }
-
-      ctx.fillStyle = 'white';
-      ctx.font = "bold small-caps 16px Helvetica";
-      ctx.fillText("points: " + points, 288, 40);
-      ctx.fillText("top: " + pointsMax, 292, 60);
-
-      return reward;
-    }
-  }
-  
-  function keyPush (evt) {
-    switch(evt.keyCode) {
-      case 37: //left
-      game.action.left();
-      evt.preventDefault();
-      break;
-      
-      case 38: //up
-      game.action.up();
-      evt.preventDefault();
-      break;
-      
-      case 39: //right
-      game.action.right();
-      evt.preventDefault();
-      break;
-      
-      case 40: //down
-      game.action.down();
-      evt.preventDefault();
-      break;
-      
-      case 32: //space
-      Snake.pause();
-      evt.preventDefault();
-      break;
-      
-      case 27: //esc
-      game.reset();
-      evt.preventDefault();
+var snake = {
+  x: 160,
+  y: 160,
+  dx: grid,
+  dy: 0,
+  cells: [],
+  maxCells: 4
+};
+var apple = {
+  x: 320,
+  y: 320
+};
+var sleepTime = 20;
+var superHard = false;
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
       break;
     }
   }
+}
+function loop() {
+  
 
-  return {
+  sleep(sleepTime);
+  if(superHard == true){
+    grid=3;
+  }
+  else{grid=10}
+  if(running){
+    requestAnimationFrame(loop);
+  }
+  else if(aiGo){
+    requestAnimationFrame(loop);
+    var directionOut = network.activate([snake.x/400,snake.y/400,apple.x/400,apple.y/400]);
     
-    init: function () {
-      window.onload = setup;
-    },
-
-    start: function (fps = 15) {
-      window.onload = setup;
-      intervalID = setInterval(game.loop, 1000 / fps);
-    },
-
-    loop: game.loop,
-
-    reset: game.reset,
-
-    stop: function () {
-      clearInterval(intervalID);
-    },
+      var max = Math.max.apply(Math, directionOut);
+      var findHelper = (element) => element == max;
+      var index = directionOut.findIndex(findHelper);
+      directionOut[index] = 1;
+      if(directionOut[0] == 1){
+        snake.dx = 10;
+        snake.dy = 0;
+      }
+      else if(directionOut[1] == 1){
+        snake.dy = -10;
+        snake.dx = 0;
+      }
+      else if(directionOut[2] == 1){
+        snake.dx = -10;
+        snake.dy = 0;
+      }
+      else if(directionOut[3] == 1){
+        snake.dy = 10;
+        snake.dx = 0;
+      }
     
-    setup: {
-      keyboard: function (state) {
-        if (state) {
-          document.addEventListener('keydown', keyPush);
-        }
-        else {
-          document.removeEventListener('keydown', keyPush);
-        }
-      },
-      wall: function (state) {
-        walls = state;
-      },
-      tileCount: function (size) {
-        tileCount = size;
-        gridSize = 400 / tileCount;        
-      },
-      fixedTail: function (state) {
-        fixedTail = state;
-      }
-    },
+  }
+  
+  if (++count < 4) {
+    return;
+  }
+  count = 0;
+  context.clearRect(0,0,canvas.width,canvas.height);
+  snake.x += snake.dx;
+  snake.y += snake.dy;
+  if (snake.x < 0) {
+    snake.x = canvas.width - grid;
+  }
+  else if (snake.x >= canvas.width) {
+    snake.x = 0;
+  }
+  
 
-    action: function (act) {
-      switch(act) {
-        case 'left':
-          game.action.left();
-          break;
-
-        case 'up':
-          game.action.up();
-          break;
-
-        case 'right':
-          game.action.right();
-          break;
-
-        case 'down':
-          game.action.down();
-          break;
-      }
-    },
-    
-    pause: function () {
-      velocity.x = 0;
-      velocity.y = 0;
-    },
-
-    clearTopScore: function () {
-      pointsMax = 0;
-    },
-
-    data:  {
-      player: player,
-      fruit: fruit,
-      trail: function () {
-        return trail;
-      }
-    },
-
-    info: {
-      tileCount: tileCount
+  if (snake.y < 0) {
+    snake.y = canvas.height - grid;
+  }
+  else if (snake.y >= canvas.height) {
+    snake.y = 0;
+  }
+  snake.cells.unshift({x: snake.x, y: snake.y});
+  if (snake.cells.length > snake.maxCells) {
+    snake.cells.pop();
+  }
+  context.fillStyle = "Yellow";
+  context.fillRect(apple.x, apple.y, grid-1, grid-1);
+  context.fillStyle = "Blue";
+  snake.cells.forEach(function(cell, index) {
+    context.fillRect(cell.x, cell.y, grid-1, grid-1);
+    if (cell.x == apple.x && cell.y == apple.y) {
+      snake.maxCells++;
+      apple.x = getRandomInt(0, 25) * grid;
+      apple.y = getRandomInt(0, 25) * grid;
     }
-  };
+    for (var i = index + 1; i < snake.cells.length; i++) {
+      if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+        snake.x = 160;
+        snake.y = 160;
+        snake.cells = [];
+        snake.maxCells = 4;
+        snake.dx = grid;
+        snake.dy = 0;
+        apple.x = getRandomInt(0, 25) * grid;
+        apple.y = getRandomInt(0, 25) * grid;
+      }
+    }
+  });
+}
+document.addEventListener("keydown", function(e) {
+  var direction1 = 0, direction2 = 0, direction3 = 0, direction4 = 0;
+  
+  if (e.which === 37 && snake.dx === 0 && superHard == false) {
+    snake.dx = -grid;
+    snake.dy = 0;
+  }
+  else if (e.which === 38 && snake.dy === 0 && superHard == false) {
+    snake.dy = -grid;
+    snake.dx = 0;
+  }
+  else if (e.which === 39 && snake.dx === 0) {
+    snake.dx = grid;
+    snake.dy = 0;
+  }
+  else if (e.which === 40 && snake.dy === 0) {
+    snake.dy = grid;
+    snake.dx = 0;
+  }
+  if(snake.dx == 10){
+    direction1 = 1;
+  }
+  else if(snake.dy ==-10){
+    direction2 = 1;
+  }
+  else if(snake.dx == -10){
+    direction3 = 1;
+  }
+  else if(snake.dy == 10){
+    direction4 = 1;
+  }
 
-})();
+  
+
+  data[data.length] = {input:[snake.x/400,snake.y/400,apple.x/400,apple.y/400], output: [direction1, direction2, direction3, direction4]};
+});
+function start(){
+running = true;
+requestAnimationFrame(loop);
+}
+function stop(){
+  running = false;
+}
+function ai(){
+  abc(data);
+}
