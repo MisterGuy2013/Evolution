@@ -18,7 +18,7 @@ var apple = {
   x: 320,
   y: 320
 };
-var sleepTime = 20;
+var sleepTime = 80;
 var superHard = false;
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
@@ -50,26 +50,51 @@ function loop() {
       var findHelper = (element) => element == max;
       var index = directionOut.findIndex(findHelper);
       directionOut[index] = 1;
-      if(directionOut[0] == 1){
-        snake.dx = 10;
+      if(directionOut[0] == 1 && snake.dx != -grid){
+        snake.dx = grid;
         snake.dy = 0;
       }
-      else if(directionOut[1] == 1){
-        snake.dy = -10;
+      else if(directionOut[1] == 1 && snake.dy != grid){
+        snake.dy = -grid;
         snake.dx = 0;
       }
-      else if(directionOut[2] == 1){
-        snake.dx = -10;
+      else if(directionOut[2] == 1 && snake.dx != grid){
+        snake.dx = -grid;
         snake.dy = 0;
       }
-      else if(directionOut[3] == 1){
-        snake.dy = 10;
+      else if(directionOut[3] == 1 && snake.dy != -grid){
+        snake.dy = grid;
         snake.dx = 0;
       }
-    
+    else{
+      directionOut[index] = 0;
+      var max = Math.max.apply(Math, directionOut);
+      var findHelper = (element) => element == max;
+      var index = directionOut.findIndex(findHelper);
+      directionOut[index] = 1;
+      if(directionOut[0] == 1 && snake.dx != -grid){
+        snake.dx = grid;
+        snake.dy = 0;
+      }
+      else if(directionOut[1] == 1 && snake.dy != grid){
+        snake.dy = -grid;
+        snake.dx = 0;
+      }
+      else if(directionOut[2] == 1 && snake.dx != grid){
+        snake.dx = -grid;
+        snake.dy = 0;
+      }
+      else if(directionOut[3] == 1 && snake.dy != -grid){
+        snake.dy = grid;
+        snake.dx = 0;
+      }
+    }
   }
+
+
   
-  if (++count < 4) {
+  
+  if (++count < 0) {
     return;
   }
   count = 0;
@@ -106,6 +131,7 @@ function loop() {
     }
     for (var i = index + 1; i < snake.cells.length; i++) {
       if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+        console.log(snake.dx + ":" + snake.dy);
         snake.x = 160;
         snake.y = 160;
         snake.cells = [];

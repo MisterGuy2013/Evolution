@@ -11,15 +11,17 @@
 
     <script src="https://combinatronics.com/wagenaartje/neataptic/master/graph/graph.js"></script>
     <script src="https://wagenaartje.github.io/neataptic/cdn/1.4.7/neataptic.js"></script>
+  <script src="model.js"></script>
 </head>
 <body>
     <h1>A snake AI that YOU train</h1>
     <button onclick="start()">start training</button>
     <button onclick="stop()">stop training</button>
-    <button onclick="ai()">start ai</button>
+    <button onclick="ai()">start AI processing</button>
+  <button style="display:none;" id="AIStartButton" onclick="startAIProcess()">Run AI</button>
     <div id="canvas"></div>
     <canvas width="400" height="400" id="game" style="border:1px solid black; background-color: gray;"></canvas>
-    <svg id="draw" width="600px" height="450px" />
+    
 
 
     <style>#draw {
@@ -29,7 +31,7 @@
         height: 100%;
       }</style>
     <script>
-      var network = new neataptic.Network(4,4);
+var network = new neataptic.Network(4,4);
 async function abc(trainingSet) {
 
 
@@ -40,7 +42,7 @@ var trainingSetTWO = [
   { input: [1,1,1,1], output: [1,1,1,1] }
 ];
 
-
+document.getElementById("canvas").innerHTML = "Processing...";
     await network.evolve(trainingSet, {
      //mutation: methods.mutation.FFW,
         equal: true,
@@ -51,12 +53,15 @@ var trainingSetTWO = [
         iterations: 1000,
         mutationRate: 0.5
       });
+document.getElementById("canvas").innerHTML = "Done!";
+  document.getElementById("AIStartButton").style = "";
+  
+}
+function startAIProcess(){
   aiGo=true;
   //console.log(network.activate([snake.x/400,snake.y/400,apple.x/400,apple.y/400]));
   requestAnimationFrame(loop);
-  
 }
-
 //abc();
 
 
@@ -66,5 +71,7 @@ var trainingSetTWO = [
 
     </script>
       <script src="/snake.js"></script>
+  <button onclick="document.getElementById('canvas').innerHTML= requestAnimationFrame(loop);">Get Frame</button>
+  <button onclick="modelUp();">Upload Model</button>
 </body>
 </html>
